@@ -69,6 +69,7 @@ void reshade::runtime::init_gui()
 	_overlay_key_data[2] = false;
 	_overlay_key_data[3] = false;
 
+#if 0
 	_imgui_context = ImGui::CreateContext();
 
 	ImGuiIO &imgui_io = _imgui_context->IO;
@@ -107,15 +108,19 @@ void reshade::runtime::init_gui()
 	imgui_style.WindowBorderSize = 0.0f;
 
 	ImGui::SetCurrentContext(nullptr);
+#endif
 }
 void reshade::runtime::deinit_gui()
 {
+#if 0
 	ImGui::DestroyContext(_imgui_context);
+#endif
 }
 
 void reshade::runtime::build_font_atlas()
 {
-	ImFontAtlas *const atlas = _imgui_context->IO.Fonts;
+#if 0
+	ImFontAtlas *const atlas = ImGui::GetIO().Fonts;
 
 	if (atlas->IsBuilt())
 		return;
@@ -230,14 +235,17 @@ void reshade::runtime::build_font_atlas()
 	}
 
 	_device->set_resource_name(_font_atlas_tex, "ImGui font atlas");
+#endif
 }
 
 void reshade::runtime::load_config_gui(const ini_file &config)
 {
+#if 0
 	if (_input_gamepad != nullptr)
 		_imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	else
 		_imgui_context->IO.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+#endif
 
 	config.get("INPUT", "KeyOverlay", _overlay_key_data);
 	config.get("INPUT", "InputProcessing", _input_processing_mode);
@@ -259,6 +267,7 @@ void reshade::runtime::load_config_gui(const ini_file &config)
 	config.get("OVERLAY", "AutoSavePreset", _auto_save_preset);
 #endif
 
+#if 0
 	ImGuiStyle &imgui_style = _imgui_context->Style;
 	config.get("STYLE", "Alpha", imgui_style.Alpha);
 	config.get("STYLE", "ChildRounding", imgui_style.ChildRounding);
@@ -329,6 +338,7 @@ void reshade::runtime::load_config_gui(const ini_file &config)
 			handler.ApplyAllFn(_imgui_context, &handler);
 
 	ImGui::SetCurrentContext(backup_context);
+#endif
 }
 void reshade::runtime::save_config_gui(ini_file &config) const
 {
@@ -352,6 +362,7 @@ void reshade::runtime::save_config_gui(ini_file &config) const
 	config.set("OVERLAY", "AutoSavePreset", _auto_save_preset);
 #endif
 
+#if 0
 	const ImGuiStyle &imgui_style = _imgui_context->Style;
 	config.set("STYLE", "Alpha", imgui_style.Alpha);
 	config.set("STYLE", "ChildRounding", imgui_style.ChildRounding);
@@ -395,6 +406,7 @@ void reshade::runtime::save_config_gui(ini_file &config) const
 	}
 
 	ImGui::SetCurrentContext(backup_context);
+#endif
 }
 
 void reshade::runtime::load_custom_style()
@@ -689,6 +701,9 @@ void reshade::runtime::draw_gui()
 {
 	assert(_is_initialized);
 
+	_imgui_context = ImGui::GetCurrentContext();
+	_font_size = ImGui::GetFontSize();
+
 	if (_input != nullptr)
 	{
 		if (_show_overlay && !_ignore_shortcuts && !_imgui_context->IO.NavVisible && _input->is_key_pressed(0x1B /* VK_ESCAPE */))
@@ -761,6 +776,7 @@ void reshade::runtime::draw_gui()
 		return; // Early-out to avoid costly ImGui calls when no GUI elements are on the screen
 	}
 
+#if 0
 	build_font_atlas();
 	if (_font_atlas_srv == 0)
 		return; // Cannot render GUI without font atlas
@@ -829,13 +845,15 @@ void reshade::runtime::draw_gui()
 	}
 
 	ImGui::NewFrame();
+#endif
 
+	auto &imgui_io = ImGui::GetIO();
 	ImVec2 viewport_offset = ImVec2(0, 0);
 
 	// Create ImGui widgets and windows
 	if (show_splash)
 	{
-		ImGui::SetNextWindowPos(_imgui_context->Style.WindowPadding);
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos + _imgui_context->Style.WindowPadding);
 		ImGui::SetNextWindowSize(ImVec2(imgui_io.DisplaySize.x - 20.0f, 0.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.0f);
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.862745f, 0.862745f, 0.862745f, 1.0f));
@@ -1013,6 +1031,8 @@ void reshade::runtime::draw_gui()
 		ImGui::PopStyleColor();
 	}
 
+	viewport_offset += ImVec2(0, ImGui::GetFrameHeightWithSpacing() * 12.0f);
+
 	if (_show_overlay)
 	{
 		// Change font size if user presses the control key and moves the mouse wheel
@@ -1037,7 +1057,7 @@ void reshade::runtime::draw_gui()
 			{ "About", &runtime::draw_gui_about }
 		};
 
-		const ImGuiID root_space_id = ImGui::GetID("Dockspace");
+		const ImGuiID root_space_id = ImGui::GetID("ReShadeDockspace");
 		const ImGuiViewport *const viewport = ImGui::GetMainViewport();
 
 		// Set up default dock layout if this was not done yet
@@ -1045,25 +1065,20 @@ void reshade::runtime::draw_gui()
 		if (init_window_layout)
 		{
 			// Add the root node
-			ImGui::DockBuilderAddNode(root_space_id, ImGuiDockNodeFlags_DockSpace);
-			ImGui::DockBuilderSetNodeSize(root_space_id, viewport->Size);
+			ImGui::DockBuilderAddNode(root_space_id);
 
-			// Split root node into two spaces
-			ImGuiID main_space_id = 0;
-			ImGuiID right_space_id = 0;
-			ImGui::DockBuilderSplitNode(root_space_id, ImGuiDir_Left, 0.35f, &main_space_id, &right_space_id);
+			ImGui::DockBuilderSetNodePos(root_space_id, viewport->Pos + viewport_offset);
+			ImGui::DockBuilderSetNodeSize(root_space_id, (viewport->Size - viewport_offset) * ImVec2(0.35f, 1.0f));
 
 			// Attach most windows to the main dock space
 			for (const std::pair<const char *, void(runtime::*)()> &widget : overlay_callbacks)
-				ImGui::DockBuilderDockWindow(widget.first, main_space_id);
-
-			// Attach editor window to the remaining dock space
-			ImGui::DockBuilderDockWindow("###editor", right_space_id);
+				ImGui::DockBuilderDockWindow(widget.first, root_space_id);
 
 			// Commit the layout
 			ImGui::DockBuilderFinish(root_space_id);
 		}
 
+#if 0
 		ImGui::SetNextWindowPos(viewport->Pos + viewport_offset);
 		ImGui::SetNextWindowSize(viewport->Size - viewport_offset);
 		ImGui::SetNextWindowViewport(viewport->ID);
@@ -1077,6 +1092,7 @@ void reshade::runtime::draw_gui()
 			ImGuiWindowFlags_NoBackground);
 		ImGui::DockSpace(root_space_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
 		ImGui::End();
+#endif
 
 		if (_imgui_context->NavInputSource != ImGuiInputSource_None)
 		{
@@ -1201,6 +1217,7 @@ void reshade::runtime::draw_gui()
 	// Disable keyboard shortcuts while typing into input boxes
 	_ignore_shortcuts |= ImGui::IsAnyItemActive();
 
+#if 0
 	// Render ImGui widgets and windows
 	ImGui::Render();
 
@@ -1233,6 +1250,7 @@ void reshade::runtime::draw_gui()
 	}
 
 	ImGui::SetCurrentContext(backup_context);
+#endif
 }
 
 #if RESHADE_FX
@@ -3871,6 +3889,7 @@ void reshade::runtime::draw_code_editor(editor_instance &instance)
 
 bool reshade::runtime::init_imgui_resources()
 {
+#if 0
 	// Adjust default font size based on the vertical resolution
 	if (_font_size == 0)
 		_editor_font_size = _font_size = _height >= 2160 ? 26 : _height >= 1440 ? 20 : 13;
@@ -4017,6 +4036,9 @@ bool reshade::runtime::init_imgui_resources()
 		LOG(ERROR) << "Failed to create ImGui pipeline!";
 		return false;
 	}
+#endif
+
+	return true;
 }
 void reshade::runtime::render_imgui_draw_data(api::command_list *cmd_list, ImDrawData *draw_data, api::resource_view rtv)
 {
@@ -4172,6 +4194,7 @@ void reshade::runtime::render_imgui_draw_data(api::command_list *cmd_list, ImDra
 }
 void reshade::runtime::destroy_imgui_resources()
 {
+#if 0
 	_imgui_context->IO.Fonts->Clear();
 
 	_device->destroy_resource(_font_atlas_tex);
@@ -4195,6 +4218,7 @@ void reshade::runtime::destroy_imgui_resources()
 	_imgui_pipeline = {};
 	_device->destroy_pipeline_layout(_imgui_pipeline_layout);
 	_imgui_pipeline_layout = {};
+#endif
 }
 
 #endif
