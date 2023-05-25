@@ -415,7 +415,10 @@ namespace reshade
 		void load_custom_style();
 		void save_custom_style() const;
 
+public:
 		void draw_gui();
+
+private:
 		void draw_gui_vr();
 
 #  if RESHADE_FX
@@ -441,7 +444,11 @@ namespace reshade
 		ImGuiContext *_imgui_context = nullptr;
 
 		bool _show_splash = true;
+
+public:
 		bool _show_overlay = false;
+
+private:
 		unsigned int _show_fps = 2;
 		unsigned int _show_clock = false;
 		unsigned int _show_frametime = false;
