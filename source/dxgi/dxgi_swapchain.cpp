@@ -9,9 +9,9 @@
 #include "d3d11/d3d11_device.hpp"
 #include "d3d11/d3d11_device_context.hpp"
 #include "d3d11/d3d11_impl_swapchain.hpp"
-#include "d3d12/d3d12_device.hpp"
-#include "d3d12/d3d12_command_queue.hpp"
-#include "d3d12/d3d12_impl_swapchain.hpp"
+//#include "d3d12/d3d12_device.hpp"
+//#include "d3d12/d3d12_command_queue.hpp"
+//#include "d3d12/d3d12_impl_swapchain.hpp"
 #include "dll_log.hpp" // Include late to get HRESULT log overloads
 
 extern bool modify_swapchain_desc(DXGI_SWAP_CHAIN_DESC &desc);
@@ -67,6 +67,7 @@ DXGISwapChain::DXGISwapChain(D3D11Device *device, IDXGISwapChain1 *original) :
 	assert(_orig != nullptr && _direct3d_device != nullptr);
 	_direct3d_device->AddRef();
 }
+#if 0
 DXGISwapChain::DXGISwapChain(D3D12CommandQueue *command_queue, IDXGISwapChain3 *original) :
 	_orig(original),
 	_interface_version(3),
@@ -80,10 +81,11 @@ DXGISwapChain::DXGISwapChain(D3D12CommandQueue *command_queue, IDXGISwapChain3 *
 	// Add reference to command queue as well to ensure it is kept alive for the lifetime of the effect runtime
 	_direct3d_command_queue->AddRef();
 }
+#endif
 
 void DXGISwapChain::runtime_reset()
 {
-	const std::unique_lock<std::shared_mutex> lock(_direct3d_version == 12 ? static_cast<D3D12CommandQueue *>(_direct3d_command_queue)->_mutex : _impl_mutex);
+	const std::unique_lock<std::shared_mutex> lock(_impl_mutex);
 
 	switch (_direct3d_version)
 	{
@@ -93,14 +95,11 @@ void DXGISwapChain::runtime_reset()
 	case 11:
 		static_cast<reshade::d3d11::swapchain_impl *>(_impl)->on_reset();
 		break;
-	case 12:
-		static_cast<reshade::d3d12::swapchain_impl *>(_impl)->on_reset();
-		break;
 	}
 }
 void DXGISwapChain::runtime_resize()
 {
-	const std::unique_lock<std::shared_mutex> lock(_direct3d_version == 12 ? static_cast<D3D12CommandQueue *>(_direct3d_command_queue)->_mutex : _impl_mutex);
+	const std::unique_lock<std::shared_mutex> lock(_impl_mutex);
 
 	switch (_direct3d_version)
 	{
@@ -109,9 +108,6 @@ void DXGISwapChain::runtime_resize()
 		break;
 	case 11:
 		static_cast<reshade::d3d11::swapchain_impl *>(_impl)->on_init();
-		break;
-	case 12:
-		static_cast<reshade::d3d12::swapchain_impl *>(_impl)->on_init();
 		break;
 	}
 }
@@ -130,7 +126,7 @@ void DXGISwapChain::runtime_present(UINT flags, [[maybe_unused]] const DXGI_PRES
 	// Synchronize access to effect runtime to avoid race conditions between 'load_effects' and 'destroy_effects' causing crashes
 	// This is necessary because Resident Evil 3 calls DXGI functions simultaneously from multiple threads (which is technically illegal)
 	// In case of D3D12, also synchronize access to the command queue while events are invoked and the immediate command list may be accessed
-	const std::unique_lock<std::shared_mutex> lock(_direct3d_version == 12 ? static_cast<D3D12CommandQueue *>(_direct3d_command_queue)->_mutex : _impl_mutex);
+	const std::unique_lock<std::shared_mutex> lock(_impl_mutex);
 
 	switch (_direct3d_version)
 	{
@@ -167,19 +163,6 @@ void DXGISwapChain::runtime_present(UINT flags, [[maybe_unused]] const DXGI_PRES
 #endif
 		static_cast<reshade::d3d11::swapchain_impl *>(_impl)->on_present();
 		break;
-	case 12:
-#if RESHADE_ADDON
-		reshade::invoke_addon_event<reshade::addon_event::present>(
-			static_cast<D3D12CommandQueue *>(_direct3d_command_queue),
-			_impl,
-			nullptr,
-			nullptr,
-			params != nullptr ? params->DirtyRectsCount : 0,
-			params != nullptr ? reinterpret_cast<const reshade::api::rect *>(params->pDirtyRects) : nullptr);
-#endif
-		static_cast<reshade::d3d12::swapchain_impl *>(_impl)->on_present();
-		static_cast<D3D12CommandQueue *>(_direct3d_command_queue)->flush_immediate_command_list();
-		break;
 	}
 }
 
@@ -205,9 +188,6 @@ void DXGISwapChain::handle_device_loss(HRESULT hr)
 				break;
 			case 11:
 				reason = static_cast<ID3D11Device *>(_direct3d_device)->GetDeviceRemovedReason();
-				break;
-			case 12:
-				reason = static_cast<ID3D12Device *>(_direct3d_device)->GetDeviceRemovedReason();
 				break;
 			}
 
@@ -298,9 +278,6 @@ ULONG   STDMETHODCALLTYPE DXGISwapChain::Release()
 		break;
 	case 11:
 		delete static_cast<reshade::d3d11::swapchain_impl *>(_impl);
-		break;
-	case 12:
-		delete static_cast<reshade::d3d12::swapchain_impl *>(_impl);
 		break;
 	}
 
@@ -597,9 +574,6 @@ HRESULT STDMETHODCALLTYPE DXGISwapChain::SetColorSpace1(DXGI_COLOR_SPACE_TYPE Co
 	{
 	case 11:
 		static_cast<reshade::d3d11::swapchain_impl *>(_impl)->set_back_buffer_color_space(ColorSpace);
-		break;
-	case 12:
-		static_cast<reshade::d3d12::swapchain_impl *>(_impl)->set_back_buffer_color_space(ColorSpace);
 		break;
 	}
 

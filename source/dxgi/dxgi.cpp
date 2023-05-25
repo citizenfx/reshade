@@ -332,6 +332,7 @@ static void dump_and_modify_swapchain_desc(DXGI_SWAP_CHAIN_DESC1 &desc, DXGI_SWA
 
 UINT query_device(IUnknown *&device, com_ptr<IUnknown> &device_proxy)
 {
+#if 0
 	if (com_ptr<D3D10Device> device_d3d10;
 		SUCCEEDED(device->QueryInterface(&device_d3d10)))
 	{
@@ -339,6 +340,7 @@ UINT query_device(IUnknown *&device, com_ptr<IUnknown> &device_proxy)
 		device_proxy = std::move(reinterpret_cast<com_ptr<IUnknown> &>(device_d3d10));
 		return 10;
 	}
+#endif
 	if (com_ptr<D3D11Device> device_d3d11;
 		SUCCEEDED(device->QueryInterface(&device_d3d11)))
 	{
@@ -346,6 +348,7 @@ UINT query_device(IUnknown *&device, com_ptr<IUnknown> &device_proxy)
 		device_proxy = std::move(reinterpret_cast<com_ptr<IUnknown> &>(device_d3d11));
 		return 11;
 	}
+#if 0
 	if (com_ptr<D3D12CommandQueue> command_queue_d3d12;
 		SUCCEEDED(device->QueryInterface(&command_queue_d3d12)))
 	{
@@ -367,6 +370,7 @@ UINT query_device(IUnknown *&device, com_ptr<IUnknown> &device_proxy)
 			return 10;
 		}
 	}
+#endif
 	if (com_ptr<ID3D11Device> device_d3d11_orig;
 		SUCCEEDED(device->QueryInterface(&device_d3d11_orig)))
 	{
@@ -403,6 +407,7 @@ static void init_swapchain_proxy(T *&swapchain, UINT direct3d_version, const com
 
 		swapchain_proxy = new DXGISwapChain(device.get(), swapchain);
 	}
+#if 0
 	else if (direct3d_version == 12)
 	{
 		if (com_ptr<IDXGISwapChain3> swapchain3; SUCCEEDED(swapchain->QueryInterface(&swapchain3)))
@@ -416,6 +421,7 @@ static void init_swapchain_proxy(T *&swapchain, UINT direct3d_version, const com
 			LOG(WARN) << "Skipping swap chain because it is missing support for the IDXGISwapChain3 interface.";
 		}
 	}
+#endif
 	else
 	{
 		LOG(WARN) << "Skipping swap chain because it was created without a hooked Direct3D device.";
