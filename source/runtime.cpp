@@ -1592,8 +1592,8 @@ bool reshade::runtime::load_effect(const std::filesystem::path &source_file, con
 			codegen.reset(reshadefx::create_codegen_hlsl(shader_model, !_no_debug_info, _performance_mode));
 		else if (_renderer_id < 0x20000)
 			codegen.reset(reshadefx::create_codegen_glsl(false, !_no_debug_info, _performance_mode, false, true));
-		else // Vulkan uses SPIR-V input
-			codegen.reset(reshadefx::create_codegen_spirv(true, !_no_debug_info, _performance_mode, false, false));
+		//else // Vulkan uses SPIR-V input
+			//codegen.reset(reshadefx::create_codegen_spirv(true, !_no_debug_info, _performance_mode, false, false));
 
 		reshadefx::parser parser;
 
