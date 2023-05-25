@@ -24,11 +24,13 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#if 0
 #include <fpng.h>
 #include <stb_image.h>
 #include <stb_image_dds.h>
 #include <stb_image_write.h>
 #include <stb_image_resize.h>
+#endif
 #include <d3dcompiler.h>
 
 #if RESHADE_FX
@@ -252,7 +254,7 @@ reshade::runtime::runtime(api::device *device, api::command_queue *graphics_queu
 
 	load_config();
 
-	fpng::fpng_init();
+	//fpng::fpng_init();
 }
 reshade::runtime::~runtime()
 {
@@ -2919,6 +2921,7 @@ void reshade::runtime::load_textures()
 			continue;
 		}
 
+#if 0 // TODO
 		stbi_uc *pixels = nullptr;
 		int width = 0, height = 0, channels = 0;
 
@@ -2947,6 +2950,7 @@ void reshade::runtime::load_textures()
 		update_texture(tex, width, height, pixels);
 
 		stbi_image_free(pixels);
+#endif
 
 		tex.loaded = true;
 	}
@@ -4159,6 +4163,7 @@ void reshade::runtime::save_texture(const texture &tex)
 					static_cast<std::ofstream *>(context)->write(static_cast<const char *>(data), size);
 				};
 
+#if 0
 				switch (_screenshot_format)
 				{
 				case 0:
@@ -4179,6 +4184,7 @@ void reshade::runtime::save_texture(const texture &tex)
 					save_success = stbi_write_jpg_to_func(write_callback, &file, width, height, 4, pixels.data(), _screenshot_jpeg_quality) != 0;
 					break;
 				}
+#endif
 
 				if (!file)
 					save_success = false;
@@ -4201,7 +4207,7 @@ void reshade::runtime::update_texture(texture &tex, uint32_t width, uint32_t hei
 	{
 		LOG(INFO) << "Resizing image data for texture '" << tex.unique_name << "' from " << width << "x" << height << " to " << tex.width << "x" << tex.height << '.';
 
-		stbir_resize_uint8(pixels, width, height, 0, resized.data(), tex.width, tex.height, 0, 4);
+		//stbir_resize_uint8(pixels, width, height, 0, resized.data(), tex.width, tex.height, 0, 4);
 	}
 	else
 	{
@@ -4641,6 +4647,7 @@ void reshade::runtime::save_screenshot(const std::string_view &postfix)
 			// Default to a save failure unless it is reported to succeed below
 			bool save_success = false;
 
+#if 0
 			if (auto file = std::ofstream(screenshot_path, std::ios::binary | std::ios::trunc))
 			{
 				const auto write_callback = [](void *context, void *data, int size) {
@@ -4671,6 +4678,7 @@ void reshade::runtime::save_screenshot(const std::string_view &postfix)
 				if (!file)
 					save_success = false;
 			}
+#endif
 
 			if (save_success)
 			{
