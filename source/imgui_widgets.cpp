@@ -8,6 +8,8 @@
 #include "fonts/forkawesome.h"
 #include <cassert>
 
+#define ImGuiInputReadMode_Pressed ImGuiNavReadMode_Pressed
+
 extern std::filesystem::path g_reshade_base_path;
 
 bool reshade::imgui::path_list(const char *label, std::vector<std::filesystem::path> &paths, std::filesystem::path &dialog_path, const std::filesystem::path &default_path)

@@ -90,7 +90,7 @@ extern imgui_function_table g_imgui_function_table;
 
 extern "C" __declspec(dllexport) const imgui_function_table *ReShadeGetImGuiFunctionTable(uint32_t version)
 {
-	if (version == IMGUI_VERSION_NUM)
+	if (version == IMGUI_VERSION_NUM || version == 18600) // ReShade's current ABI is for 1.86, we bundle 1.88-WIP
 		return &g_imgui_function_table;
 
 	LOG(ERROR) << "Failed to retrieve ImGui function table, because the requested ImGui version (" << version << ") is not supported (expected " << IMGUI_VERSION_NUM << ").";

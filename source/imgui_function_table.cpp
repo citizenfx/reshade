@@ -184,7 +184,7 @@ imgui_function_table g_imgui_function_table = {
 	ImGui::ColorEdit4,
 	ImGui::ColorPicker3,
 	ImGui::ColorPicker4,
-	ImGui::ColorButton,
+	nullptr,//ImGui::ColorButton,
 	ImGui::SetColorEditOptions,
 	ImGui::TreeNode,
 	ImGui::TreeNodeV,

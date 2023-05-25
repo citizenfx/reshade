@@ -5,6 +5,8 @@
 
 #if RESHADE_GUI
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "version.h"
 #include "dll_log.hpp"
 #include "dll_resources.hpp"
@@ -1192,7 +1194,7 @@ void reshade::runtime::draw_gui()
 			preview_max.y = (preview_max.y * 0.5f) + (_preview_size[1] * 0.5f);
 		}
 
-		ImGui::FindWindowByName("Viewport")->DrawList->AddImage(_preview_texture.handle, preview_min, preview_max, ImVec2(0, 0), ImVec2(1, 1), _preview_size[2]);
+		ImGui::FindWindowByName("Viewport")->DrawList->AddImage((ImTextureID)_preview_texture.handle, preview_min, preview_max, ImVec2(0, 0), ImVec2(1, 1), _preview_size[2]);
 	}
 #endif
 
@@ -1628,7 +1630,7 @@ void reshade::runtime::draw_gui_home()
 		if (ImGui::IsItemActive())
 		{
 			ImVec2 move_delta = _imgui_context->IO.MouseDelta;
-			move_delta += ImGui::GetNavInputAmount2d(ImGuiNavDirSourceFlags_RawKeyboard | ImGuiNavDirSourceFlags_PadLStick, ImGuiInputReadMode_Down) * _imgui_context->IO.DeltaTime * 500.0f;
+			move_delta += ImGui::GetNavInputAmount2d(ImGuiNavDirSourceFlags_RawKeyboard | ImGuiNavDirSourceFlags_PadLStick, ImGuiNavReadMode_Down) * _imgui_context->IO.DeltaTime * 500.0f;
 
 			_variable_editor_height = std::max(_variable_editor_height - move_delta.y, 0.0f);
 			save_config();
@@ -2455,7 +2457,7 @@ void reshade::runtime::draw_gui_statistics()
 			_preview_size[2] = (r ? 0x000000FF : 0) | (g ? 0x0000FF00 : 0) | (b ? 0x00FF0000 : 0) | 0xFF000000;
 
 			const float aspect_ratio = static_cast<float>(tex.width) / static_cast<float>(tex.height);
-			imgui::image_with_checkerboard_background(tex.srv[0].handle, ImVec2(single_image_width, single_image_width / aspect_ratio), _preview_size[2]);
+			imgui::image_with_checkerboard_background((ImTextureID)tex.srv[0].handle, ImVec2(single_image_width, single_image_width / aspect_ratio), _preview_size[2]);
 
 			ImGui::EndGroup();
 			ImGui::PopID();
