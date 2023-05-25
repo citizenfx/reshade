@@ -918,6 +918,7 @@ void reshade::runtime::draw_gui()
 				ImGui::ProgressBar(0.0f, ImVec2(-1, 0), "");
 				ImGui::SameLine(15);
 
+#if 0
 				if (_input == nullptr)
 				{
 					ImGui::TextColored(COLOR_YELLOW, "No keyboard or mouse input available.%s", _input_gamepad != nullptr ? " Use gamepad instead: Press 'left + right shoulder + start button' to open the configuration overlay." : "");
@@ -940,6 +941,9 @@ void reshade::runtime::draw_gui()
 					ImGui::SameLine(0.0f, 0.0f);
 					ImGui::TextUnformatted("' to open the configuration overlay.");
 				}
+#endif
+
+				ImGui::TextUnformatted("Press 'F8' and type 'toggle reshade_gui' to open the configuration overlay.");
 			}
 
 			std::string error_message;
