@@ -455,8 +455,8 @@ bool reshade::runtime::on_init(input::window_handle window)
 	if (!init_imgui_resources())
 		goto exit_failure;
 
-	if (_is_vr && !init_gui_vr())
-		goto exit_failure;
+//	if (_is_vr && !init_gui_vr())
+//		goto exit_failure;
 #endif
 
 	if (window != nullptr && !_is_vr)
@@ -522,8 +522,8 @@ exit_failure:
 	_back_buffer_targets.clear();
 
 #if RESHADE_GUI
-	if (_is_vr)
-		deinit_gui_vr();
+//	if (_is_vr)
+//		deinit_gui_vr();
 
 	destroy_imgui_resources();
 #endif
@@ -584,8 +584,8 @@ void reshade::runtime::on_reset()
 	_width = _height = 0;
 
 #if RESHADE_GUI
-	if (_is_vr)
-		deinit_gui_vr();
+//	if (_is_vr)
+//		deinit_gui_vr();
 
 	destroy_imgui_resources();
 #endif
@@ -663,10 +663,10 @@ void reshade::runtime::on_present()
 
 #if RESHADE_GUI
 	// Draw overlay
-	if (_is_vr)
-		draw_gui_vr();
-	else
-		draw_gui();
+//	if (_is_vr)
+//		draw_gui_vr();
+//	else
+//		draw_gui();
 
 	if (_should_save_screenshot && _screenshot_save_gui && (_show_overlay
 #if RESHADE_FX
