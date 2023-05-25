@@ -21,6 +21,9 @@ private:
 
 bool reshade::runtime::check_for_update(unsigned long latest_version[3])
 {
+	return false;
+
+#if 0
 	std::memset(latest_version, 0, 3 * sizeof(unsigned long));
 
 #ifdef NDEBUG
@@ -62,4 +65,5 @@ bool reshade::runtime::check_for_update(unsigned long latest_version[3])
 #endif
 
 	return false;
+#endif
 }
