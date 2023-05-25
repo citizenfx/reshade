@@ -586,6 +586,7 @@ HRESULT STDMETHODCALLTYPE IDXGIFactory2_CreateSwapChainForComposition(IDXGIFacto
 	return hr;
 }
 
+#if 0
 extern "C" HRESULT WINAPI CreateDXGIFactory(REFIID riid, void **ppFactory)
 {
 #if RESHADE_VERBOSE_LOG
@@ -696,3 +697,4 @@ extern "C" HRESULT WINAPI DXGIDeclareAdapterRemovalSupport()
 
 	return trampoline();
 }
+#endif
